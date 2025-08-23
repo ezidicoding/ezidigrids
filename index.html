@@ -61,7 +61,7 @@
         }
 
         /* --- REMOVE BLUE FLASH ON TAP --- */
-        button, a, div[role="button"] { 
+        button, a, div[role="button"], .project-card { 
             -webkit-tap-highlight-color: transparent; 
         }
         button:focus, a:focus {
@@ -142,19 +142,64 @@
 
         /* --- Popup (Iframe) --- */
         #popup-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
-            z-index: 1002; display: flex; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+            position: fixed;
+            inset: 0;
+            background: var(--background-color); /* Solid background for fullscreen */
+            z-index: 1002;
+            display: block; /* No need for flex centering */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
         }
-        #popup-overlay.visible { opacity: 1; pointer-events: all; }
+        #popup-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
         #popup {
-            background: var(--surface-color); width: 90%; height: 85%; max-width: 1200px;
-            border-radius: 12px; box-shadow: var(--shadow); position: relative;
-            padding-top: 50px; transform: scale(0.9); transition: transform 0.3s ease;
+            background: #FBFBFB;
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            border-radius: 0;
+            box-shadow: none;
+            position: static;
+            padding-top: 35;
+            transform: none;
+            transition: none;
         }
-        #popup-overlay.visible #popup { transform: scale(1); }
-        #close-popup-btn { position: absolute; top: 10px; left: 10px; }
-        #popup-iframe { width: 100%; height: 100%; border: none; border-radius: 0 0 12px 12px; }
+        #popup-overlay.visible #popup {
+            transform: none;
+        }
+        #close-popup-btn {
+            position: fixed; /* Relative to viewport */
+            top: 2px;
+            left: 2px; /* Top right corner */
+            z-index: 1004; /* Above everything */
+            background: var(--surface-color);
+            color: var(--secondary-text-color);
+            border: 5px solid var(--border-color);
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        #close-popup-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        #popup-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 0;
+            position: relative;
+            z-index: 1003; /* Below the cancel button */
+        }
 
         /* --- Footer --- */
         footer { text-align: center; padding: 2rem 0; border-top: 1px solid var(--border-color); margin-top: 2rem; color: var(--secondary-text-color); }
@@ -260,11 +305,12 @@
     
     <div id="popup-overlay">
         <div id="popup">
-            <button id="close-popup-btn" class="icon-btn" aria-label="إغلاق (Cancel)">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <!-- زر الإغلاق أصبح الآن جزءًا من التراكب الرئيسي ليتم تحديد موضعه بشكل ثابت -->
             <iframe id="popup-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
+        <button id="close-popup-btn" class="icon-btn" aria-label="إغلاق (Cancel)">
+             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
     </div>
 
     <footer>
@@ -310,13 +356,13 @@
         const openPopup = (url) => {
             popupIframe.src = url;
             popupOverlay.classList.add('visible');
-            body.style.overflow = 'hidden';
+            body.style.overflow = 'hidden'; // Prevents scrolling of the main page
         };
 
         const closePopup = () => {
             popupOverlay.classList.remove('visible');
-            popupIframe.src = '';
-            body.style.overflow = 'auto';
+            popupIframe.src = ''; // Stop video/audio playing in iframe
+            body.style.overflow = 'auto'; // Allows scrolling again
         };
 
         projectCards.forEach(card => {
@@ -327,9 +373,8 @@
         });
 
         closePopupBtn.addEventListener('click', closePopup);
-        popupOverlay.addEventListener('click', (e) => {
-            if (e.target === popupOverlay) closePopup();
-        });
+        // Note: Clicking the overlay itself will NOT close the fullscreen popup
+        // This is intentional for a fullscreen experience. Only the button closes it.
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && popupOverlay.classList.contains('visible')) {
                 closePopup();
