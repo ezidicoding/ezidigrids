@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>GoTranslate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+    <style>
+    	 @font-face {
+
+            font-family: 'CustomArabicFont';
+
+            src: url('CustomArabicFont.ttf') format('truetype');
+
+        }
+
+
+
+        * {
+
+            font-family: 'CustomArabicFont', sans-serif;
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
+        :root {
+            --app-bg:#F8F8F8 ;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --primary-color: #00B1FF;
+            
+            --border-color: #dfe1e5;
+            --white: #ffffff;
+            --danger-color: #d93025;
+            --favorite-color: #ffc107; /* Gold for favorite */
+        }
+ 
+        html {
+            font-size: 17px;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Noto Kufi Arabic', sans-serif;
+            background-color: var(--app-bg);
+            min-height: 10vh;
+            direction: rtl;
+        }
+
+        .app-container {
+            width: 100%;
+            min-height: 50vh;
+            background-color: var(--app-bg);
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            margin: 0;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            gap: 16px;
+            flex-shrink: 0;
+        } 
+
+        .profile-pic {
+            width: 42px;
+            height: 42px;
+            border-radius: 10%;
+            object-fit: cover;
+        }
+
+        .title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 0 auto 0 0;
+        }
+
+        .star-icon {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-area-container {
+            flex-grow: 1;
+            
+            flex-direction: column;
+            position: relative;
+        }
+
+        .source-wrapper, .translated-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 18px;
+        }
+        
+        .translated-wrapper {
+            border-top: 1px solid var(--border-color);
+            min-height: 120px;
+        }
+
+        #source-text, #translated-text {
+            width: 100%;
+            border: none;
+            outline: none;
+            background-color: transparent;
+            font-family: inherit;
+            resize: none;
+            padding: 0;
+            box-sizing: border-box;
+            font-size: 1.8rem;
+            text-align: right;
+            position: relative;
+            z-index: 1;
+            line-height: 1.5;
+        }
+		
+		#source-text.latin-input {
+			text-align: left;
+		}
+
+        #source-text {
+            flex-grow: 1;
+            color: var(--text-primary);
+        }
+
+        #source-text::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        #translated-text {
+             color: var(--text-primary);
+             flex-grow: 1;
+             padding-top: 15px;
+        }
+        
+        #translated-text[readonly] {
+            cursor: default;
+        }
+
+        .text-area-control-btn {
+            position: absolute;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            z-index: 2;
+        }
+
+        #paste-btn {
+            bottom: 10px;
+            right: 10px;
+            background-color: var(--secondary-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #speak-source-btn {
+            top: 5px;
+            left: 5px;
+        }
+
+        #speak-translated-btn {
+            top: 5px;
+            right: 5px;
+        }
+
+        #favorite-btn {
+            top: 5px;
+            left: 5px;
+            font-size: 1.2rem;
+        }
+
+        #favorite-btn.is-favorite {
+            color: var(--favorite-color);
+        }
+
+        #status-message {
+            text-align: center;
+            color: var(--text-secondary);
+            height: 20px;
+            padding: 5px 0;
+            font-size: 0.9rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .language-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 16px;
+            background-color: var(--app-bg);
+            flex-shrink: 0;
+        }
+
+        .lang-container {
+            flex: 1;
+        }
+
+        .lang-btn {
+            width: 100%;
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: inherit;
+            color: var(--text-primary);
+            text-align: center;
+            cursor: pointer;
+            appearance: none;
+        }
+
+        #swap-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 16px 8px;
+            background-color: var(--secondary-color);
+            flex-shrink: 0;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex-basis: 33%;
+            cursor: pointer;
+        }
+
+        .action-item p {
+            margin: 0;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            background-color: #d1e2e3;
+            border: none;
+        }
+
+        #mic-btn {
+            width: 64px;
+            height: 64px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            font-size: 1.75rem;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transition: background-color 0.3s ease;
+        }
+
+        #mic-btn.is-listening {
+            background-color: var(--danger-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(217, 48, 37, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(217, 48, 37, 0); }
+            80% { box-shadow: 0 0 0 0 rgba(217, 48, 37, 0); }
+        }
+
+        /* Saved Words Modal */
+        .saved-words-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .saved-words-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .saved-words-modal-content {
+            background-color: var(--white);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .saved-words-modal-overlay.active .saved-words-modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .saved-words-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .saved-words-modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--text-primary); }
+        .saved-words-modal-close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; padding: 5px; }
+        .saved-words-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+        .saved-words-list li { display: flex; flex-direction: column; padding: 15px 20px; border-bottom: 1px solid var(--border-color); }
+        .saved-words-list li:last-child { border-bottom: none; }
+        .saved-words-list .phrase-text { font-size: 1rem; color: var(--text-primary); margin-bottom: 5px; }
+        .saved-words-list .original-text { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px; }
+        .saved-words-list .delete-btn { background-color: var(--danger-color); color: var(--white); border: none; border-radius: 5px; padding: 8px 12px; cursor: pointer; font-size: 0.85rem; align-self: flex-end; }
+        .saved-words-list p.no-phrases { text-align: center; color: var(--text-secondary); padding: 20px; }
+        
+        button:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible,
+        .action-item:focus-visible,
+        .star-icon:focus-visible,
+        .saved-words-modal-close-btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--secondary-color);
+            border-radius: 5px;
+        }
+    </style>  
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/%C3%8Az%C3%AEdxan_Protection_Force.svg" alt="Profile" class="profile-pic">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Flag_of_Kurdistan.svg/1200px-Flag_of_Kurdistan.svg.png" alt="Profile" class="profile-pic">
+            <h1 class="title">KegoTranslate</h1>
+            <i class="fa-solid fa-star star-icon" id="header-star-btn" tabindex="0"></i>
+        </header>
+<br/> 
+        <main>
+            <div class="text-area-container">
+                <div class="source-wrapper">
+                    <textarea id="source-text" placeholder="إدخال نص"></textarea>
+                    <button id="paste-btn" class="text-area-control-btn"><br/>
+                        <i class="fa-regular fa-paste"></i>
+                        <span>لصق</span>
+                    </button>
+                    <button id="speak-source-btn" class="text-area-control-btn">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+          <br/>      <div id="status-message"></div>
+                <div class="translated-wrapper">
+                    <textarea id="translated-text" readonly></textarea>
+                    <button id="favorite-btn" class="text-area-control-btn">
+                        <i class="fa-regular fa-star"></i>
+                    </button>
+                    <button id="speak-translated-btn" class="text-area-control-btn">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <div class="language-selector">
+            <div class="lang-container">
+                 <select id="source-lang" class="lang-btn"></select>
+            </div>
+            <button id="swap-btn"><i class="fa-solid fa-right-left"></i></button>
+            <div class="lang-container">
+                 <select id="target-lang" class="lang-btn"></select>
+            </div>
+        </div>
+
+        <footer>
+            <div class="action-item" id="camera-btn" tabindex="0">
+                <div class="icon-wrapper"><i class="fa-solid fa-camera-retro"></i></div>
+                <p>الكاميرا</p>
+            </div>
+            <div class="action-item">
+                <button class="icon-wrapper" id="mic-btn"><i class="fa-solid fa-microphone"></i></button>
+            </div>
+            <div class="action-item" id="conversation-btn" tabindex="0">
+                <div class="icon-wrapper"><i class="fa-solid fa-users"></i></div>
+                <p>محادثة</p>
+            </div>
+        </footer>
+
+        <!-- Saved Words Modal -->
+        <div class="saved-words-modal-overlay" id="saved-words-modal-overlay">
+            <div class="saved-words-modal-content">
+                <div class="saved-words-modal-header">
+                    <h2>العبارات المحفوظة</h2>
+                    <button class="saved-words-modal-close-btn" id="close-saved-modal-btn">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <ul class="saved-words-list" id="saved-words-list">
+                    <!-- Saved phrases will be loaded here by JavaScript -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sourceLang = document.getElementById('source-lang');
+            const targetLang = document.getElementById('target-lang');
+            const sourceText = document.getElementById('source-text');
+            const translatedText = document.getElementById('translated-text');
+            const statusMessage = document.getElementById('status-message');
+            const swapBtn = document.getElementById('swap-btn');
+            const pasteBtn = document.getElementById('paste-btn');
+            const micBtn = document.getElementById('mic-btn');
+            const cameraBtn = document.getElementById('camera-btn');
+            const conversationBtn = document.getElementById('conversation-btn');
+            const speakSourceBtn = document.getElementById('speak-source-btn');
+            const speakTranslatedBtn = document.getElementById('speak-translated-btn');
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const headerStarBtn = document.getElementById('header-star-btn');
+            const savedWordsModalOverlay = document.getElementById('saved-words-modal-overlay');
+            const closeSavedModalBtn = document.getElementById('close-saved-modal-btn');
+            const savedWordsList = document.getElementById('saved-words-list');
+
+            const languages = {
+                'ar': 'العربية', 'en': 'الإنجليزية', 'nl': 'الهولندية', 'fr': 'الفرنسية', 'de': 'الألمانية', 'es': 'الإسبانية',
+                'it': 'الإيطالية', 'ja': 'اليابانية', 'ko': 'الكورية', 'pt': 'البرتغالية', 'ru': 'الروسية', 'zh-CN': 'الصينية (مبسطة)',
+                'yz_kmr': 'الكردية الإيزيدية ( كرمانجية )', 'yz_ckb': 'الكردية الإيزيدية ( سورگيه )', 'kmr': 'الكردية الكرمانجية', 'ckb': 'الكردية السورانية',
+                'af': 'الأفريقانية', 'sq': 'الألبانية', 'am': 'الأمهرية', 'hy': 'الأرمنية', 'az': 'الأذربيجانية', 'eu': 'الباسكية', 'be': 'البيلاروسية', 'bn': 'البنغالية', 'bs': 'البوسنية', 'bg': 'البلغارية', 'ca': 'الكتالونية', 'ceb': 'السيبيوانية', 'ny': 'الشيشيوا', 'zh-TW': 'الصينية (تقليدية)', 'co': 'الكورسيكية', 'hr': 'الكرواتية', 'cs': 'التشيكية', 'da': 'الدانمركية', 'et': 'الإستونية', 'tl': 'الفلبينية', 'fi': 'الفنلندية', 'fy': 'الفريزية', 'gl': 'الجاليكية', 'ka': 'الجورجية', 'el': 'اليونانية', 'gu': 'الكجراتية', 'ht': 'الكريولية الهايتية', 'ha': 'الهوسا', 'haw': 'لغة هاواي', 'iw': 'العبرية', 'hi': 'الهندية', 'hmn': 'الهمونغ', 'hu': 'المجرية', 'is': 'الآيسلندية', 'ig': 'الإيغبو', 'id': 'الإندونيسية', 'ga': 'الأيرلندية', 'jw': 'الجاوية', 'kn': 'الكنادية', 'kk': 'الكازاخستانية', 'km': 'الخميرية', 'ku': 'الكردية (كورمانجي)', 'ky': 'القرغيزية', 'lo': 'اللاوية', 'la': 'العربية', 'lv': 'اللاتفية', 'lt': 'الليتوانية', 'lb': 'اللوكسمبرجية', 'mk': 'المقدونية', 'mg': 'المالاجاشية', 'ms': 'الملايو', 'ml': 'الماليالامية', 'mt': 'المالطية', 'mi': 'الماورية', 'mn': 'المنغولية', 'my': 'البورمية', 'ne': 'النيبالية', 'no': 'النرويجية', 'ps': 'البشتوية', 'fa': 'الفارسية', 'pl': 'البولندية', 'pa': 'البنجابية', 'ro': 'الرومانية', 'sm': 'الساموية', 'gd': 'الغيلية الأسكتلندية', 'sr': 'الصربية', 'st': 'السوثوية', 'sn': 'الشونا', 'sd': 'السندية', 'si': 'السنهالية', 'sk': 'السلوفاكية', 'sl': 'السلوفينية', 'so': 'الصومالية', 'su': 'السوندانية', 'sw': 'السواحيلية', 'sv': 'السويدية', 'tg': 'الطاجيكية', 'ta': 'التاميلية', 'te': 'التيلجو', 'th': 'التايلاندية', 'tr': 'التركية', 'uk': 'الأوكرانية', 'ur': 'الأردية', 'uz': 'الأوزبكية', 'vi': 'الفيتنامية', 'cy': 'الويلزية', 'xh': 'الخوسا', 'yi': 'اليديشية', 'yo': 'اليوربا', 'zu': 'الزولو'
+            };
+
+            const SAVED_PHRASES_KEY = 'GOOGLE_TRANSLATE_CLONE_SAVED_PHRASES';
+            
+            const API_KEY = 'AIzaSyCZ3imeSY-DL12GWSOCCpxViSx-TLlfjQc'; 
+
+            function populateLanguages() {
+                 const specialCodes = ['yz_kmr', 'yz_ckb', 'kmr', 'ckb', 'ar'];
+                const sortedLangs = Object.entries(languages).sort((a, b) => {
+                    const aIsSpecial = specialCodes.includes(a[0]);
+                    const bIsSpecial = specialCodes.includes(b[0]);
+
+                    if (aIsSpecial && !bIsSpecial) return -1;
+                    if (!aIsSpecial && bIsSpecial) return 1;
+                    if (aIsSpecial && bIsSpecial) {
+                        return specialCodes.indexOf(a[0]) - specialCodes.indexOf(b[0]);
+                    }
+                    return a[1].localeCompare(b[1], 'ar');
+                });
+            
+                sortedLangs.forEach(([code, name]) => {
+                    const option1 = new Option(name, code);
+                    const option2 = new Option(name, code);
+                    sourceLang.add(option1);
+                    targetLang.add(option2);
+                });
+
+                sourceLang.value = 'ar';
+                targetLang.value = 'yz_ckb';
+            }
+
+            function debounce(func, delay) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
+
+            const escapeRegExp = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+            async function transformToYezidiLatin(inputText) {
+                let text = inputText;
+                try {
+                    const response = await fetch('words-11.json');
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const customData = await response.json();
+                    
+                    // 1. Replacements
+                    if (customData.replacements) {
+                        const sortedKeys = Object.keys(customData.replacements).sort((a, b) => b.length - a.length);
+                        sortedKeys.forEach(key => {
+                            text = text.replace(new RegExp(escapeRegExp(key), 'g'), customData.replacements[key]);
+                        });
+                    }
+
+                    // 2. Corrections
+                    if (customData.corrections) {
+                         const sortedKeys = Object.keys(customData.corrections).sort((a, b) => b.length - a.length);
+                         sortedKeys.forEach(key => {
+                            const regex = new RegExp(`\\b${escapeRegExp(key)}\\b`, 'g');
+                            text = ` ${text} `.replace(regex, ` ${customData.corrections[key]} `).trim();
+                        });
+                    }
+                } catch (error) {
+                    console.warn(`Could not load words-1.json for transformations, proceeding without them.`, error);
+                }
+
+                const soraniArabicToLatin  = {
+                        'ئ': '𐺀', 'ا': '𐺀', 'ب': '𐺁', 'پ': '𐺂', 'ت': '𐺕', 'ج': '𐺆', 'چ': '𐺇', 'ح': '𐺧', 'خ': '𐺊',
+                        'د': '𐺋', 'ر': '𐺍', 'ڕ': '𐺎', 'ز': '𐺏', 'ژ': '𐺐', 'س': '𐺑', 'ش': '𐺒', 'ع': '𐺗',
+                        'غ': '𐺘', 'ف': '𐺙', 'ڤ': '𐺚', 'ق': '𐺜', 'ک': '𐺝', 'گ': '𐺟', 'ل': '𐺠', 'ڵ': '𐺰',
+                        'م': '𐺡', 'ن': '𐺢', 'و': '𐺤', 'ۆ': '𐺥', 'وو': '𐺣', 'ه': '𐺧', 'ە': '𐺦', 'ی': '𐺨', 'ي': '𐺨', 'ێ': '𐺩' 
+                };
+                
+                let latinText = text;
+                for (const [arabic, latin] of Object.entries(soraniArabicToLatin)) {
+                    latinText = latinText.replace(new RegExp(arabic, 'g'), latin);
+                }
+                
+                translatedText.style.textAlign = 'right';
+                return latinText.replace(/\s+/g, ' ').trim();
+            }
+            
+            async function transformFromYezidiLatin(inputText) {
+                let text = inputText;
+                try {
+                    const response = await fetch('words-1-reversed.json');
+                     if (!response.ok) throw new Error('Network response was not ok');
+
+                    const customData = await response.json();
+                    
+                    if (customData.replacements) {
+                        const sortedKeys = Object.keys(customData.replacements).sort((a, b) => b.length - a.length);
+                        sortedKeys.forEach(key => {
+                            text = text.replace(new RegExp(escapeRegExp(key), 'g'), customData.replacements[key]);
+                        });
+                    }
+
+                    if (customData.corrections) {
+                         const sortedKeys = Object.keys(customData.corrections).sort((a, b) => b.length - a.length);
+                         sortedKeys.forEach(key => {
+                            const regex = new RegExp(`\\b${escapeRegExp(key)}\\b`, 'g');
+                            text = ` ${text} `.replace(regex, ` ${customData.corrections[key]} `).trim();
+                        });
+                    }
+                } catch (error) {
+                     console.warn(`Could not load words-1-reversed.json for transformations, proceeding without them.`, error);
+                }
+                return text.replace(/\s+/g, ' ').trim();
+            }
+
+            const translateText = async () => {
+                translatedText.style.textAlign = 'right';
+
+                let textToTranslate = sourceText.value.trim();
+                const sl = sourceLang.value;
+                const tl = targetLang.value;
+                
+                let apiSourceLang = sl;
+                let apiTargetLang = tl;
+
+                if (!textToTranslate) {
+                    translatedText.value = '';
+                    statusMessage.textContent = '';
+                    updateFavoriteButtonState();
+                    return;
+                }
+
+                if (API_KEY === 'YOUR_GOOGLE_TRANSLATE_API_KEY' || !API_KEY) {
+                    translatedText.value = 'خطأ: مفتاح API غير صالح أو مفقود.';
+                    return;
+                }
+
+                translatedText.value = '...';
+
+                // --- NEW LOGIC: Pre-process text if source is yz_ckb ---
+                if (sl === 'yz_ckb') {
+                    apiSourceLang = 'ckb'; // Send to Google as standard Sorani
+                    textToTranslate = await transformFromYezidiLatin(textToTranslate);
+                }
+                // --------------------------------------------------------
+
+                if (tl === 'yz_kmr') apiTargetLang = 'kmr';
+                if (tl === 'yz_ckb') apiTargetLang = 'ckb';
+
+                const apiUrl = `https://translation.googleapis.com/language/translate/v2?key=${API_KEY}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ q: textToTranslate, source: apiSourceLang, target: apiTargetLang, format: 'text' })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API Error: ${errorData.error.message}`);
+                    }
+                    
+                    const data = await response.json();
+                    let resultText = data.data.translations[0].translatedText;
+                    
+                    // --- NEW LOGIC: Post-process text if target is yz_ckb ---
+                    if (tl === 'yz_ckb') {
+                        translatedText.value = await transformToYezidiLatin(resultText);
+                    } else {
+                        translatedText.value = resultText;
+                    }
+                    // ----------------------------------------------------------
+
+                    statusMessage.textContent = '';
+                    updateFavoriteButtonState();
+                } catch (error) {
+                    console.error('Error during translation:', error);
+                    translatedText.value = 'حدث خطأ أثناء الترجمة. تحقق من صلاحية المفتاح أو اتصالك بالانترنت.';
+                    statusMessage.textContent = 'فشلت الترجمة';
+                    updateFavoriteButtonState();
+                    setTimeout(() => statusMessage.textContent = '', 4000);
+                }
+            };
+            
+            const debouncedTranslate = debounce(translateText, 500);
+			
+			function updateSourceTextInputDirection() {
+				if (sourceLang.value === 'yz_ckb') {
+					sourceText.style.textAlign = 'left';
+					sourceText.classList.add('latin-input');
+				} else {
+					sourceText.style.textAlign = 'right';
+					sourceText.classList.remove('latin-input');
+				}
+			}
+
+            function swapLanguages() {
+                const tempLang = sourceLang.value;
+                sourceLang.value = targetLang.value;
+                targetLang.value = tempLang;
+                
+                const tempSourceText = sourceText.value;
+                sourceText.value = translatedText.value;
+                
+				updateSourceTextInputDirection();
+				
+                if (sourceText.value.trim()) {
+                    translateText();
+                } else {
+                    translatedText.value = '';
+                    statusMessage.textContent = '';
+                    updateFavoriteButtonState();
+                }
+            }
+            
+            async function pasteText() {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    sourceText.value = (sourceText.value.trim() === '' ? '' : sourceText.value + ' ') + text;
+                    sourceText.focus();
+                    sourceText.selectionStart = sourceText.selectionEnd = sourceText.value.length;
+                    translateText();
+                } catch (error) {
+                    console.error('Failed to read clipboard contents: ', error);
+                    statusMessage.textContent = 'فشل لصق النص.';
+                }
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.continuous = false; recognition.interimResults = false;
+                recognition.onstart = () => { micBtn.classList.add('is-listening'); statusMessage.textContent = 'استمع...'; };
+                recognition.onend = () => { micBtn.classList.remove('is-listening'); if (statusMessage.textContent === 'استمع...') statusMessage.textContent = ''; };
+                recognition.onerror = (event) => { console.error('Speech recognition error', event.error); statusMessage.textContent = 'خطأ في التعرف على الصوت'; micBtn.classList.remove('is-listening'); };
+                recognition.onresult = (event) => { const transcript = event.results[0][0].transcript; sourceText.value = (sourceText.value.trim() === '' ? '' : sourceText.value + ' ') + transcript; debouncedTranslate(); };
+                micBtn.addEventListener('click', () => { if (micBtn.classList.contains('is-listening')) { recognition.stop(); } else { recognition.lang = sourceLang.value; recognition.start(); } });
+            } else { micBtn.disabled = true; micBtn.style.opacity = 0.5; micBtn.style.cursor = 'not-allowed'; }
+
+            function speakText(text, langCode) {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    let speechLang = langCode;
+                    if (langCode === 'yz_kmr') speechLang = 'kmr';
+                    if (langCode === 'yz_ckb') {
+                        alert('النطق الصوتي غير متاح حاليًا لهذه اللغة.');
+                        return;
+                    }
+                    
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = speechLang;
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    alert('عذراً، متصفحك لا يدعم تحويل النص إلى كلام.');
+                }
+            }
+
+            function generateUniqueId() { return '_' + Math.random().toString(36).substr(2, 9); }
+            function loadSavedPhrases() { const data = localStorage.getItem(SAVED_PHRASES_KEY); return data ? JSON.parse(data) : []; }
+            function savePhrases(phrases) { localStorage.setItem(SAVED_PHRASES_KEY, JSON.stringify(phrases)); }
+
+            function isCurrentTranslationSaved() {
+                const currentOriginal = sourceText.value.trim();
+                const currentTranslated = translatedText.value.trim();
+                if (!currentOriginal || !currentTranslated) return false;
+                const savedPhrases = loadSavedPhrases();
+                return savedPhrases.some(p => p.originalText === currentOriginal && p.translatedText === currentTranslated && p.sourceLang === sourceLang.value && p.targetLang === targetLang.value);
+            }
+
+            function updateFavoriteButtonState() {
+                const icon = favoriteBtn.querySelector('i');
+                if (isCurrentTranslationSaved()) {
+                    favoriteBtn.classList.add('is-favorite');
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                } else {
+                    favoriteBtn.classList.remove('is-favorite');
+                    icon.classList.remove('fa-solid');
+                    icon.classList.add('fa-regular');
+                }
+            }
+
+            function toggleFavorite() {
+                const currentOriginal = sourceText.value.trim();
+                const currentTranslated = translatedText.value.trim();
+                if (!currentOriginal || !currentTranslated || currentTranslated === 'يترجم...') { alert('لا يوجد نص لترجمته أو ترجمة لحفظها.'); return; }
+                let savedPhrases = loadSavedPhrases();
+                if (isCurrentTranslationSaved()) {
+                    savedPhrases = savedPhrases.filter(p => !(p.originalText === currentOriginal && p.translatedText === currentTranslated && p.sourceLang === sourceLang.value && p.targetLang === targetLang.value));
+                } else {
+                    savedPhrases.push({ id: generateUniqueId(), originalText: currentOriginal, translatedText: currentTranslated, sourceLang: sourceLang.value, targetLang: targetLang.value, timestamp: Date.now() });
+                }
+                savePhrases(savedPhrases);
+                updateFavoriteButtonState();
+                renderSavedPhrases();
+            }
+
+            function renderSavedPhrases() {
+                const savedPhrases = loadSavedPhrases().sort((a, b) => b.timestamp - a.timestamp);
+                savedWordsList.innerHTML = '';
+                if (savedPhrases.length === 0) {
+                    savedWordsList.innerHTML = '<p class="no-phrases">لا توجد عبارات محفوظة بعد.</p>';
+                    return;
+                }
+                savedPhrases.forEach(phrase => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<p class="phrase-text"><strong>${phrase.translatedText}</strong></p><p class="original-text">${phrase.originalText} (${languages[phrase.sourceLang] || phrase.sourceLang} -> ${languages[phrase.targetLang] || phrase.targetLang})</p><button class="delete-btn" data-id="${phrase.id}">حذف</button>`;
+                    savedWordsList.appendChild(listItem);
+                });
+                savedWordsList.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const idToDelete = event.target.dataset.id;
+                        let phrases = loadSavedPhrases().filter(p => p.id !== idToDelete);
+                        savePhrases(phrases);
+                        renderSavedPhrases();
+                        updateFavoriteButtonState();
+                    });
+                });
+            }
+
+            sourceText.addEventListener('input', debouncedTranslate);
+            sourceLang.addEventListener('change', () => {
+				updateSourceTextInputDirection();
+				translateText();
+			}); 
+            targetLang.addEventListener('change', translateText); 
+            swapBtn.addEventListener('click', swapLanguages);
+            pasteBtn.addEventListener('click', pasteText);
+            speakSourceBtn.addEventListener('click', () => speakText(sourceText.value, sourceLang.value));
+            speakTranslatedBtn.addEventListener('click', () => {
+                if (targetLang.value === 'yz_kmr' || targetLang.value === 'yz_ckb') {
+                     alert('النطق الصوتي غير متاح حاليًا لهذه اللغة.');
+                     return;
+                }
+                speakText(translatedText.value, targetLang.value)
+            }); 
+            favoriteBtn.addEventListener('click', toggleFavorite);
+
+            function openModal() { renderSavedPhrases(); savedWordsModalOverlay.classList.add('active'); }
+            function closeModal() { savedWordsModalOverlay.classList.remove('active'); }
+
+            headerStarBtn.addEventListener('click', openModal);
+            headerStarBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openModal(); });
+
+            closeSavedModalBtn.addEventListener('click', closeModal);
+            savedWordsModalOverlay.addEventListener('click', (event) => { if (event.target === savedWordsModalOverlay) closeModal(); });
+
+            [cameraBtn, conversationBtn].forEach(btn => {
+                const alertMsg = `ميزة ${btn.id === 'camera-btn' ? 'الكاميرا' : 'المحادثة'} غير متاحة في هذا العرض التوضيحي.`;
+                btn.addEventListener('click', () => alert(alertMsg));
+                btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') alert(alertMsg); });
+            });
+            
+            populateLanguages();
+			updateSourceTextInputDirection();
+            updateFavoriteButtonState();
+        });
+    </script>
+
+</body> 
+</html>
